@@ -1,0 +1,26 @@
+{
+	"name": "app",
+	"productName": "App",
+	"version": "0.0.0",
+	"description": "Desc",
+	"license": "MIT",
+	"repository": "user/repo",
+	"author": {
+		"name": "",
+		"email": "",
+		"url": ""
+	},
+	"scripts": {
+		"start": "electron .",
+		"build": "electron-packager . --out=dist --asar --overwrite --all"
+	},
+	"main": "electron.js",
+	"dependencies": {
+		"electron-debug": "^2.0.0"
+	},
+	"devDependencies": {
+		"devtron": "^1.4.0",
+		"electron": "^3.0",
+		"electron-packager": "^12.1"
+	}
+}

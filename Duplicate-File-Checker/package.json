@@ -17,11 +17,6 @@
 		"electron-builder": "^20.28.4",
 		"wait-on": "^3.0.1"
 	},
-	"build": {
-		"publish": {
-			"provider": "github"
-		}
-	},
 	"main": "public/electron.js",
 	"homepage": "./",
 	"scripts": {
