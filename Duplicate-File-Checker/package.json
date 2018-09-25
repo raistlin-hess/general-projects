@@ -1,0 +1,38 @@
+{
+	"name": "duplicate-file-search",
+	"description": "Deep searches for duplicate files and displays them.",
+	"author": "R",
+	"version": "0.0.1",
+	"private": true,
+	"dependencies": {
+		"cross-env": "^5.2.0",
+		"react": "^16.5.1",
+		"react-dom": "^16.5.1",
+		"material-ui": "^0.20.2"
+	},
+	"devDependencies": {
+		"concurrently": "3.5.1",
+		"electron": "2.0.2",
+		"electron-builder": "^20.15.1",
+		"prettier": "^1.4.4",
+		"react-scripts": "1.1.4",
+		"wait-on": "2.1.0"
+	},
+	"build": {
+		"publish": {
+			"provider": "github"
+		}
+	},
+	"main": "public/electron.js",
+	"homepage": "./",
+	"scripts": {
+		"react-start": "react-scripts start",
+		"react-build": "react-scripts build",
+		"react-test": "react-scripts test --env=jsdom",
+		"react-eject": "react-scripts eject",
+		"electron-build": "electron-builder",
+		"release": "npm run react-build && electron-builder --publish=always",
+		"build": "npm run react-build && npm electron-build",
+		"start": "concurrently \"cross-env BROWSER=none npm run react-start\" \"wait-on http://localhost:3000 && electron .\""
+	}
+}
