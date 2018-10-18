@@ -1,7 +1,9 @@
 'use strict';
-const electron = require('electron');
-
-const app = electron.app;
+// $env:path="$env:path;$(npm bin)"
+const electron = require('electron'),
+	app = electron.app,
+	path = require('path'),
+	glob = require('glob');
 
 // Adds debug features like hotkeys for triggering dev tools and reload
 require('electron-debug')();
@@ -42,3 +44,7 @@ app.on('activate', () => {
 app.on('ready', () => {
 	mainWindow = createMainWindow();
 });
+
+//Import all scripts used in the app
+// const files = glob.sync(path.join(__dirname, 'js/*.js'));
+// files.forEach((file) => { require(file); });
