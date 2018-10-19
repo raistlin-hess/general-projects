@@ -22,7 +22,11 @@ const selectBaseDir = function() {
 					}
 				});
 			});
-			let tag = document.getElementById('baseDir');
+			document.getElementById('baseDir').innerHTML = directory;
 		}
 	});
+};
+
+const beginSearch = function() {
+	
 };

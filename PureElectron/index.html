@@ -12,8 +12,19 @@
 			<script src="js/filesystem.js"></script>
 			<!-- <button id="openDir" onclick="openDir();">Select Folder</button> -->
 			<!-- <input id="targetDir" type="file" name="targetDir" webkitdirectory> -->
-			<button onclick="selectBaseDir();">Select Folder</button>
-			<div id="baseDir"></div>
+			<table>
+				<tr>
+					<td>
+						<button onclick="selectBaseDir();">Select Folder</button>
+					</td>
+					<td>
+						<div id="baseDir"></div>
+					</td>
+				</tr>
+				<tr>
+					<button onclick="beginSearch();">Begin Search</button>
+				</tr>
+			</table>
 		</div>
 	</body>
 </html>
