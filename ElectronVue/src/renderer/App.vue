@@ -1,20 +1,24 @@
 <template>
-  <div id="app">
-    <landing-page></landing-page>
-  </div>
+	<div id="app">
+		<!-- <landing-page></landing-page> -->
+		<directory-listing></directory-listing>
+	</div>
 </template>
 
 <script>
-  import LandingPage from '@/components/LandingPage'
+	const vuetify = require('vuetify');
+	import LandingPage from '@/components/LandingPage';
+	import DirectoryListing from '@/components/DirectoryListing';
 
-  export default {
-    name: 'electron-vue',
-    components: {
-      LandingPage
-    }
-  }
+	export default {
+		name: 'duplicate-checking',
+		components: {
+			LandingPage,
+			DirectoryListing
+		}
+	}
 </script>
 
 <style>
-  /* CSS */
+	/* CSS */
 </style>
