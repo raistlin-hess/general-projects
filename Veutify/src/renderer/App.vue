@@ -9,10 +9,9 @@
 				app
 			>
 				<v-list>
-					<v-list-tile 
+					<v-list-tile :key="i"
 						router
 						:to="item.to"
-						:key="i"
 						v-for="(item, i) in items"
 						exact
 					>
@@ -47,6 +46,7 @@
 </template>
 
 <script>
+
 	export default {
 		name: 'vuetify',
 		data: () => ({
@@ -67,5 +67,8 @@
 <style>
 	@import url('assets/MaterialIcons.css');
 	/* @import url('https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons'); */
-	
+	span#tip {
+		font-weight: bold;
+		font-size: 125%;
+	}
 </style>

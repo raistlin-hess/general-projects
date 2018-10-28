@@ -3,10 +3,10 @@
 		<v-flex xs6 md4>
 			<v-card>
 				<v-toolbar color="green">
-					<v-toolbar-title v-if="baseDir">
+					<v-toolbar-title v-if="rootDir">
 						<v-tooltip bottom>
-							<span slot="activator">{{ baseDirName }}</span>
-							<span id="tip">{{ baseDir }}</span>
+							<span slot="activator">{{ rootDirName }}</span>
+							<span id="tip">{{ rootDir }}</span>
 						</v-tooltip>
 					</v-toolbar-title>
 					<v-toolbar-title v-else>Please select a directory</v-toolbar-title>
@@ -16,39 +16,50 @@
 					</v-btn>
 				</v-toolbar>
 
-				<v-expansion-panel popout>
-					<v-expansion-panel-content
-						v-for="item in dirChildren"
-						:key="item.title"
-						:readonly="item.icon !== 'folder'"
-						:hide-actions="item.icon !== 'folder'"
+				<directory-list 
+					:rootDir="rootDir"
+					:rootDirName="rootDirName"
+					:nodes="nodes"
+				>
+				</directory-list>
+
+				<!-- <v-expansion-panel popout>
+					<v-expansion-panel-content :key="node.title"
+						v-for="(node, index) in nodes"
+						:readonly="node.icon !== 'folder'"
+						:hide-actions="node.icon !== 'folder'"
+						@input="expandDir($event, node, index)"
 					>
 						<span slot="header">
-							<v-icon>{{item.icon}}</v-icon>
-							{{item.title}}
+							<v-icon>{{node.icon}}</v-icon>
+							{{node.title}}
 						</span>
 						<v-card>
-							<v-card-text>{{item.title}}</v-card-text>
+							<v-expansion-panel>
+								<v-expansion-panel-content :key="index"
+									v-for="(node, index) in nodes"
+									:readonly="node.icon !== 'folder'"
+									:hide-actions="node.icon !== 'folder'"
+									@input="expandDir($event, node.title, index)"
+								>
+									<span slot="header">
+										<v-icon>{{node.icon}}</v-icon>
+										{{node.title}}
+									</span>
+									<v-card>
+										<v-card-title>{{node.title}}</v-card-title>
+									</v-card>
+								</v-expansion-panel-content>
+							</v-expansion-panel>
 						</v-card>
 					</v-expansion-panel-content>
-				</v-expansion-panel>
-				<!-- <v-list>
-					<v-list-tile
-						v-for="item in dirChildren"
-						:key="item.title"
-						@click=""
-					>
-						<v-list-tile-action>
-							<v-icon>{{ item.icon }}</v-icon>
-						</v-list-tile-action>
-						<v-list-tile-content>
-							<v-list-tile-title v-text="item.title"></v-list-tile-title>
-						</v-list-tile-content>
-					</v-list-tile>
-				</v-list> -->
+				</v-expansion-panel> -->
+
+
 			</v-card>
 		</v-flex>
-		<v-tooltip bottom v-if="baseDir">
+
+		<v-tooltip bottom v-if="rootDir">
 			<span id="tip">Begin Search</span>
 			<v-btn class="green" floating fab slot="activator">
 				<v-icon>done</v-icon>
@@ -62,38 +73,37 @@
 		path = require('path'),
 		walkdir = require('walkdir');
 
+	import DirectoryList from './DirectoryList';
+
 	export default {
 		name: 'main',
-		// components: { SystemInformation },
+		components: {
+			DirectoryList
+		},
 		methods: {
-			resetDirs: function() {
-				this.baseDir = '';
-				this.dirChildren = [];
+			resetDirs() {
+				this.rootDir = '';
+				this.nodes = [];
 			},
-			selectBase: function() {
+			selectBase() {
 				this.$electron.remote.dialog.showOpenDialog({properties: ['openDirectory']}, (dirs) => {
 					if(dirs) {
 						this.resetDirs();
-						this.baseDir = dirs[0];
-						this.baseDirName = path.basename(dirs[0]);
-						let children = [];
-						let options = {
-							encoding: 'utf-8',
-							withFileTypes: true
-						};
+						this.rootDir = dirs[0];
+						this.rootDirName = path.basename(dirs[0]);
 
-						fs.readdir(this.baseDir, options, (err, files) => {
+						fs.readdir(this.rootDir, {withFileTypes: true}, (err, files) => {
 							for(let x = 0; x < files.length; x++) {
-								let absPath = `${this.baseDir}/${files[x]}`;
+								let absPath = `${this.rootDir}/${files[x]}`;
 								fs.stat(absPath, (err, file) => {
 									if(file.isDirectory()) {
-										let title = files[x].replace(this.baseDir, '').replace(/^[/\\]/, '');
-										this.dirChildren.push({
+										let title = files[x].replace(this.rootDir, '').replace(/^[/\\]/, '');
+										this.nodes.push({
 											title: title,
 											icon: 'folder'
 										});
 									} else {
-										this.dirChildren.push({
+										this.nodes.push({
 											title: files[x],
 											icon: 'business_center'
 										});
@@ -102,24 +112,24 @@
 							}
 						});
 						//Below is nice for allowing multiple directory/mixed selections.
-						/* fs.lstat(this.baseDir, (err, stats) => {
+						/* fs.lstat(this.rootDir, (err, stats) => {
 							if(err) {
 								console.error('Error on '+ dirPath + ': ' + err);
 							}
 
 							if(stats.isDirectory()) {
 								debugger;
-								walkdir(this.baseDir, {max_depth: 1})
+								walkdir(this.rootDir, {max_depth: 1})
 									.on('file', (file, stats) => {
-										this.dirChildren.push({
+										this.nodes.push({
 											title: file,
 											icon: 'business_center'
 										});
 									})
 									.on('directory', (folder, stats) => {
-										let title = folder.replace(this.baseDir, '');
+										let title = folder.replace(this.rootDir, '');
 										title = title.replace(/^[/\\]/, '');
-										this.dirChildren.push({
+										this.nodes.push({
 											title: title,
 											icon: 'folder'
 										});
@@ -132,37 +142,40 @@
 					}
 				});
 			},
-			expandDir: function(selected) {
-
+			expandDir(value, node, index) {
+				if(!value) {
+					return;
+				}
+				
+				node.nodes.push({
+					icon: 'search',
+					title: node.title + '-' +index,
+					nodes: [{
+						icon: 'search',
+						title: node.title + '-child',
+						nodes: []
+					}]
+				});
 			}
 		},
-		data: () => ({
-			baseDir: '',
-			baseDirName: '',
-			dirChildren: [
+		props: {
+			rootDir: '',
+			rootDirName: '',
+			nodes: [
 				// Object Def:
-				// { icon: 'folder', title: 'New Folder', children: [] }
+				// { icon: 'folder', title: 'New Folder', nodes: [] }
 			]
+		},
+		data: () => ({
+			// rootDir: '',
+			// rootDirName: '',
+			// nodes: [
+			// 	// Object Def:
+			// 	// { icon: 'folder', title: 'New Folder', nodes: [] }
+			// ]
 		})
 	}
 </script>
 
 <style scoped>
-	/* .v-list > .v-subheader	{
-		color: white;
-		font-weight: bolder;
-	}
-
-	.v-list > .v-btn {
-		text-transform: none;
-	}
-
-	.v-list > .v-btn .v-icon {
-		padding-right: 8px;
-	} */
-
-	span#tip {
-		font-weight: bold;
-		font-size: 125%;
-	}
 </style>
