@@ -2,8 +2,8 @@
 		<div @click.stop="handleClick(node)">
 			<v-expansion-panel>
 				<v-expansion-panel-content
-					:readonly="node.icon !== 'folder'"
-					:hide-actions="node.icon !== 'folder'"
+					:readonly="node.isFile"
+					:hide-actions="node.isFile"
 					:handle-click="handleClick">
 					<span slot="header">
 						<v-icon>{{node.icon}}</v-icon>
