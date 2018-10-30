@@ -55,7 +55,7 @@
 			fixed: false,
 			items: [
 				{ icon: 'apps', title: 'Main', to: '/' },
-				{ icon: 'bubble_chart', title: 'Inspire', to: '/inspire' }
+				// { icon: 'bubble_chart', title: 'Inspire', to: '/inspire' }
 			],
 			miniVariant: false,
 			title: 'Main'

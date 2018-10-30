@@ -16,46 +16,14 @@
 					</v-btn>
 				</v-toolbar>
 
-				<directory-list 
+				
+
+				<!-- <directory-list 
 					:rootDir="rootDir"
 					:rootDirName="rootDirName"
 					:nodes="nodes"
 				>
-				</directory-list>
-
-				<!-- <v-expansion-panel popout>
-					<v-expansion-panel-content :key="node.title"
-						v-for="(node, index) in nodes"
-						:readonly="node.icon !== 'folder'"
-						:hide-actions="node.icon !== 'folder'"
-						@input="expandDir($event, node, index)"
-					>
-						<span slot="header">
-							<v-icon>{{node.icon}}</v-icon>
-							{{node.title}}
-						</span>
-						<v-card>
-							<v-expansion-panel>
-								<v-expansion-panel-content :key="index"
-									v-for="(node, index) in nodes"
-									:readonly="node.icon !== 'folder'"
-									:hide-actions="node.icon !== 'folder'"
-									@input="expandDir($event, node.title, index)"
-								>
-									<span slot="header">
-										<v-icon>{{node.icon}}</v-icon>
-										{{node.title}}
-									</span>
-									<v-card>
-										<v-card-title>{{node.title}}</v-card-title>
-									</v-card>
-								</v-expansion-panel-content>
-							</v-expansion-panel>
-						</v-card>
-					</v-expansion-panel-content>
-				</v-expansion-panel> -->
-
-
+				</directory-list> -->
 			</v-card>
 		</v-flex>
 

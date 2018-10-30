@@ -10,11 +10,11 @@ export default new Router({
       name: 'main',
       component: require('@/components/Main').default
     },
-    {
-      path: '/inspire',
-      name: 'inspire',
-      component: require('@/components/InspireView').default
-    },
+    // {
+    //   path: '/inspire',
+    //   name: 'inspire',
+    //   component: require('@/components/InspireView').default
+    // },
     {
       path: '*',
       redirect: '/'
