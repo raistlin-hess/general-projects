@@ -1,8 +1,8 @@
 <template>
 	<v-layout row>
 		<v-flex xs6 md4>
-			<v-card>
-				<v-toolbar color="green">
+			<v-card >
+				<v-toolbar class="primary">
 					<v-toolbar-title v-if="rootDir">
 						<v-tooltip bottom>
 							<span slot="activator">{{ rootDirName }}</span>
@@ -11,25 +11,27 @@
 					</v-toolbar-title>
 					<v-toolbar-title v-else>Please select a directory</v-toolbar-title>
 					<v-spacer></v-spacer>
-					<v-btn icon @click="selectBase()">
+					<v-btn icon
+						@click="selectBase()">
 						<v-icon>search</v-icon>
 					</v-btn>
 				</v-toolbar>
 
-				
+				<tree
+					:tree-data="tree"
+					@node-click="logClick"></tree>
 
 				<!-- <directory-list 
 					:rootDir="rootDir"
 					:rootDirName="rootDirName"
 					:nodes="nodes"
-				>
-				</directory-list> -->
+				></directory-list> -->
 			</v-card>
 		</v-flex>
 
 		<v-tooltip bottom v-if="rootDir">
 			<span id="tip">Begin Search</span>
-			<v-btn class="green" floating fab slot="activator">
+			<v-btn floating fab slot="activator">
 				<v-icon>done</v-icon>
 			</v-btn>
 		</v-tooltip>
@@ -42,11 +44,13 @@
 		walkdir = require('walkdir');
 
 	import DirectoryList from './DirectoryList';
+	import Tree from './Tree';
 
 	export default {
-		name: 'main',
+		name: 'home',
 		components: {
-			DirectoryList
+			DirectoryList,
+			Tree
 		},
 		methods: {
 			resetDirs() {
@@ -124,17 +128,47 @@
 						nodes: []
 					}]
 				});
+			},
+			logClick(node) {
+				if(node.icon === 'folder') {
+					console.log(`You opened the "${node.label}" folder.`);
+				} else {
+					console.log(`You clicked the "${node.label}" file.`);
+				}
 			}
 		},
-		props: {
-			rootDir: '',
-			rootDirName: '',
-			nodes: [
-				// Object Def:
-				// { icon: 'folder', title: 'New Folder', nodes: [] }
-			]
-		},
+		// props: {
+		// 	rootDir: '',
+		// 	rootDirName: '',
+		// 	nodes: [
+		// 		// Object Def:
+		// 		// { icon: 'folder', title: 'New Folder', nodes: [] }
+		// 	]
+		// },
 		data: () => ({
+			rootDir: '',
+			tree: {
+				label: "A cool folder",
+				icon: 'folder',
+				children: [
+					{
+					label: "A cool sub-folder 1",
+					icon: 'folder',
+					children: [
+						{ label: "A cool sub-sub-file 2", icon: 'business_center' },
+						{
+							label: "A cool sub-sub-folder 1",
+							icon: 'folder',
+							children: [{
+								label: "A cool sub-sub-sub-file 1",
+								icon: 'business_center'
+							}]
+						}
+					]
+					},
+					{ label: "This one is not that cool", icon: 'business_center' }
+				]
+			}
 			// rootDir: '',
 			// rootDirName: '',
 			// nodes: [

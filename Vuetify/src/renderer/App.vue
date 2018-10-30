@@ -1,12 +1,10 @@
 <template>
 	<div id="app">
 		<v-app dark>
-			<v-navigation-drawer
-				fixed
+			<v-navigation-drawer app fixed
+				v-model="drawer"
 				:mini-variant="miniVariant"
 				:clipped="clipped"
-				v-model="drawer"
-				app
 			>
 				<v-list>
 					<v-list-tile :key="i"
@@ -25,7 +23,8 @@
 				</v-list>
 			</v-navigation-drawer>
 
-			<v-toolbar fixed app :clipped-left="clipped" class="green">
+			<v-toolbar fixed app class="primary"
+				:clipped-left="clipped">
 				<v-toolbar-side-icon @click.native.stop="drawer = !drawer"></v-toolbar-side-icon>
 				<v-toolbar-title v-text="title"></v-toolbar-title>
 			</v-toolbar>
@@ -46,6 +45,23 @@
 </template>
 
 <script>
+	import Vue from 'vue';
+	import Vuetify from 'vuetify';
+	import colors from 'vuetify/es5/util/colors';
+	Vue.use(Vuetify, {
+		theme: {
+			primary: colors.green.base,
+			secondary: colors.green.lighten2,
+			accent: colors.green.darken3,
+			error: colors.red.accent4,
+			warning: colors.yellow.base,
+			info: colors.blue.base,
+			success: colors.green.base
+		},
+		options: {
+			customProperties: true	//https://vuetifyjs.com/en/style/theme
+		}
+	});
 
 	export default {
 		name: 'vuetify',
