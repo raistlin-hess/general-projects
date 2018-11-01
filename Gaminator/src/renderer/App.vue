@@ -1,45 +1,46 @@
 <template>
 	<div id="app">
 		<v-app dark>
-			<v-navigation-drawer app fixed
-				v-model="drawer"
-				:mini-variant="miniVariant"
-				:clipped="clipped"
-			>
-				<v-list>
-					<v-list-tile :key="i"
-						router
-						:to="route.to"
-						v-for="(route, i) in routes"
-						exact
-					>
-						<v-list-tile-action>
-							<v-icon v-html="route.icon"></v-icon>
-						</v-list-tile-action>
-						<v-list-tile-content>
-							<v-list-tile-title v-text="route.name"></v-list-tile-title>
-						</v-list-tile-content>
-					</v-list-tile>
-				</v-list>
-			</v-navigation-drawer>
+			<v-toolbar fixed app class="primary">
+				<v-menu transition="slide-x-transition">
+						<v-btn icon slot="activator">
+							<v-icon>more_vert</v-icon>
+						</v-btn>
+						<v-list>
+							<v-list-tile
+								v-for="(item, index) in appMenuItems"
+								:key="index"
+								@click="onAppMenuClick(item, index)">
+								<v-list-tile-title>{{ item.title }}</v-list-tile-title>
+							</v-list-tile>
+						</v-list>
+					</v-menu>
 
-			<v-toolbar fixed app class="primary"
-				:clipped-left="clipped">
-				<v-toolbar-side-icon @click.native.stop="drawer = !drawer"></v-toolbar-side-icon>
 				<v-toolbar-title v-text="this.$route.name"></v-toolbar-title>
 			</v-toolbar>
 		
 			<v-content>
-				<v-container fluid fill-height>
+				<v-container wrap fluid fill-height grid-list-md>
 					<v-slide-y-transition mode="out-in">
 						<router-view></router-view>
 					</v-slide-y-transition>
 				</v-container>
 			</v-content>
-		
-			<!-- <v-footer :fixed="fixed" inset app>
-				<span>Add breadcrumb here?</span>
-			</v-footer> -->
+
+			<!-- Error block -->
+			<v-dialog persistent max-width="350"
+				v-model="showError">
+        <v-card class="primary">
+          <v-card-title class="headline">Error</v-card-title>
+          <v-card-text>
+						{{errMsg}}
+					</v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn @click.native="showError=false">Close</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
 		</v-app>
 	</div>
 </template>
@@ -48,6 +49,9 @@
 	import Vue from 'vue';
 	import Vuetify from 'vuetify';
 	import colors from 'vuetify/es5/util/colors';
+
+alert('Need to have way to specify RootDirectories.\n Create preferences window to allow changing this.\n Draw directory list of selected directories.');
+
 	Vue.use(Vuetify, {
 		theme: {
 			primary: colors.green.base,
@@ -65,16 +69,39 @@
 
 	export default {
 		name: 'gaminator',
+		methods: {
+			onAppMenuClick(item, index) {
+				let scopeFn = this[item.fn];
+				if(!scopeFn) {
+					this.showError = true;
+					this.errMsg = `${item.title} does not have a function defined!`;
+					return;
+				}
+
+				scopeFn();
+			},
+			onExit() {
+				this.$electron.ipcRenderer.send('onExit');
+				window.close();
+			}
+		},
 		data: () => ({
-			clipped: false,
-			drawer: false,
-			fixed: false,
 			routes: [
 				{ icon: 'apps', name: 'Gaminator', to: '/' },
 				// { icon: 'bubble_chart', name: 'Inspire', to: '/inspire' }
 			],
-			miniVariant: false,
-			title: 'Main'
+			showError: false,
+			errMsg: '',
+			appMenuItems: [{
+				title: 'Preferences',
+				fn: 'onPreferences'
+			}, {
+				title: 'Run Directory Cache',
+				fn: 'onRunDirectoryCache'
+			}, {
+				title: 'Exit',
+				fn: 'onExit'
+			}]
 		})
 	}
 </script>
@@ -82,6 +109,9 @@
 <!-- Styles are applied globally. -->
 <style>
 	@import url('assets/MaterialIcons.css');
+	html {
+		overflow-y: hidden;
+	}
 	/* @import url('https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons'); */
 	span#tip {
 		font-weight: bold;

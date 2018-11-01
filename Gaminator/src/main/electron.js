@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Remote } from 'electron';
+import { app, BrowserWindow, Remote, ipcMain } from 'electron';
 const path = require('path'),
 	fs = require('fs');
 
@@ -44,8 +44,8 @@ class Store {
  * Set `__static` path to static files in production
  * https://simulatedgreg.gitbooks.io/electron-vue/content/en/using-static-assets.html
  */
-if (process.env.NODE_ENV !== 'development') {
-	global.__static = require('path').join(__dirname, '/static').replace(/\\/g, '\\\\')
+if(process.env.NODE_ENV !== 'development') {
+	global.__static = require('path').join(__dirname, '/static').replace(/\\/g, '\\\\');
 }
 let mainWindow;
 const winURL = process.env.NODE_ENV === 'development'
@@ -57,19 +57,28 @@ const preferences = new Store({
 	defaults: {
 		windowWidth: 800,
 		windowHeight: 800,
-		isMaximized: false
+		isMaximized: false,
+		rootDir: '/'
 	}
 });
+
+function savePreferences() {
+	let { width, height } = mainWindow.getBounds();
+
+	preferences.set('windowWidth', width);
+	preferences.set('windowHeight', height);
+	preferences.set('isMaximized', mainWindow.isMaximized());
+}
 
 function createWindow() {
 	mainWindow = new BrowserWindow({
 		width: preferences.get('windowWidth'),
 		height: preferences.get('windowHeight'),
-		isMaximizable: true
+		isMaximizable: true,
+		autoHideMenuBar: true
 	});
 
 	mainWindow.loadURL(winURL);
-
 	if(preferences.get('isMaximized')) {
 		mainWindow.maximize();
 	}
@@ -109,4 +118,8 @@ app.on('activate', () => {
 	if(mainWindow === null) {
 		createWindow();
 	}
+});
+
+ipcMain.on('onExit', () => {
+	savePreferences();
 });

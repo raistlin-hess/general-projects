@@ -1,7 +1,8 @@
 <template>
 	<v-layout row>
-		<v-flex xs6 md4>
+		<v-flex xs12 md5>
 			<v-card>
+				
 				<v-toolbar class="primary">
 					<v-toolbar-title v-if="rootDir.label">
 						<v-tooltip bottom>
@@ -9,29 +10,28 @@
 							<span id="tip">{{ rootDir.path }}</span>
 						</v-tooltip>
 					</v-toolbar-title>
-					<v-toolbar-title v-else>Please select a directory</v-toolbar-title>
 					<v-spacer></v-spacer>
 					<v-btn icon
 						@click="selectBase()">
 						<v-icon>search</v-icon>
 					</v-btn>
 				</v-toolbar>
-
-				<tree
-					v-if="rootDir.path"
-					:tree-data="rootDir"
-					@node-click="logClick"></tree>
-
 			</v-card>
 		</v-flex>
 
-		<v-tooltip bottom v-if="rootDir">
-			<span id="tip">Begin Search</span>
-			<v-btn floating fab class="primary"
-				slot="activator">
-				<v-icon>done</v-icon>
-			</v-btn>
-		</v-tooltip>
+
+		<v-flex xs0 md7>
+			<v-container>
+				<v-layout column>
+					<v-card>
+						<v-img src="https://picsum.photos/510/300?random" aspect-ratio=1></v-img>
+					</v-card>
+					<v-card>
+						<v-img src="https://picsum.photos/510/300?random" aspect-ratio=1></v-img>
+					</v-card>
+				</v-layout>
+			</v-container>
+		</v-flex>
 	</v-layout>
 </template>
 
