@@ -1,44 +1,8 @@
 import { app, BrowserWindow, Remote, ipcMain } from 'electron';
-const path = require('path'),
-	fs = require('fs');
+import Store from './store.js';
+import fs from 'fs';
+import path from 'path';
 
-class Store {
-	constructor(opts) {
-		// Renderer process has to get `app` module via `remote`, whereas the main process can get it directly
-		// app.getPath('userData') will return a string of the user's app data directory path.
-		const userDataPath = (app || Remote).getPath('userData');
-		// We'll use the `configName` property to set the file name and path.join to bring it all together as a string
-		this.path = path.join(userDataPath, opts.configName + '.json');
-		
-		this.data = this.parseDataFile(this.path, opts.defaults);
-	}
-	
-	// This will just return the property on the `data` object
-	get(key) {
-		return this.data[key];
-	}
-	
-	// ...and this will set it
-	set(key, val) {
-		this.data[key] = val;
-		// Wait, I thought using the node.js' synchronous APIs was bad form?
-		// We're not writing a server so there's not nearly the same IO demand on the process
-		// Also if we used an async API and our app was quit before the asynchronous write had a chance to complete,
-		// we might lose that data. Note that in a real app, we would try/catch this.
-		fs.writeFileSync(this.path, JSON.stringify(this.data));
-	}
-
-	parseDataFile(filePath, defaults) {
-		// We'll try/catch it in case the file doesn't exist yet, which will be the case on the first application run.
-		// `fs.readFileSync` will return a JSON string which we then parse into a Javascript object
-		try {
-			return JSON.parse(fs.readFileSync(filePath));
-		} catch(error) {
-			// if there was some kind of error, return the passed in defaults instead.
-			return defaults;
-		}
-	}
-}
 
 /**
  * Set `__static` path to static files in production
@@ -52,52 +16,58 @@ const winURL = process.env.NODE_ENV === 'development'
 	? `http://localhost:9080`
 	: `file://${__dirname}/index.html`;
 
+//Create initial preferences
+const defaults = {
+	windowWidth: 800,
+	windowHeight: 800,
+	isMaximized: false,
+	rootDir: '/'
+};
+let p = path.join((app || Remote).getPath('userData'), 'preferences.json');
+if(!fs.existsSync(p)) {
+	console.log('Does not exist.');
+}
 const preferences = new Store({
 	configName: 'preferences',
-	defaults: {
-		windowWidth: 800,
-		windowHeight: 800,
-		isMaximized: false,
-		rootDir: '/'
-	}
+	defaults: defaults
 });
 
-function savePreferences() {
-	let { width, height } = mainWindow.getBounds();
+function savePreferences(newPreferences) {
+	if(newPreferences) {
+		let { width, height } = mainWindow.getBounds();
+		newPreferences.windowWidth = width;
+		newPreferences.windowHeight = height;
+		newPreferences.isMaximized = mainWindow.isMaximized();
+	}
 
-	preferences.set('windowWidth', width);
-	preferences.set('windowHeight', height);
-	preferences.set('isMaximized', mainWindow.isMaximized());
+	preferences.set(newPreferences);
 }
 
-function createWindow() {
+function createMainWindow() {
 	mainWindow = new BrowserWindow({
 		width: preferences.get('windowWidth'),
 		height: preferences.get('windowHeight'),
 		isMaximizable: true,
 		autoHideMenuBar: true
 	});
-
 	mainWindow.loadURL(winURL);
 	if(preferences.get('isMaximized')) {
 		mainWindow.maximize();
 	}
-
+	
+	/**
+	 * Events
+	 */
 	mainWindow.on('closed', () => {
 		mainWindow = null;
 	});
-
-	// The BrowserWindow class extends the node.js core EventEmitter class, so we use that API
-	// to listen to events on the BrowserWindow. The resize event is emitted when the window size changes.
 	mainWindow.on('resize', () => {
-		// The event doesn't pass us the window size, so we call the `getBounds` method which returns an object with
-		// the height, width, and x and y coordinates.
 		let { width, height } = mainWindow.getBounds();
-		// Now that we have them, save them using the `set` method. 
-		preferences.set('windowWidth', width);
-		preferences.set('windowHeight', height);
+		preferences.set({
+			windowWidth: width,
+			windowHeight: height
+		});
 	});
-
 	mainWindow.on('maximize', () => {
 		preferences.set('isMaximized', mainWindow.isMaximized());
 	});
@@ -106,7 +76,7 @@ function createWindow() {
 	});
 }
 
-app.on('ready', createWindow);
+app.on('ready', createMainWindow);
 
 app.on('window-all-closed', () => {
 	if(process.platform !== 'darwin') {
@@ -116,10 +86,23 @@ app.on('window-all-closed', () => {
 
 app.on('activate', () => {
 	if(mainWindow === null) {
-		createWindow();
+		createMainWindow();
 	}
 });
 
+/**
+ * Main <> Renderer Listeners
+ */
+
 ipcMain.on('onExit', () => {
 	savePreferences();
+});
+
+ipcMain.on('getPreferences', (e, data) => {
+	e.sender.send('getPreferences', preferences);
+});
+
+ipcMain.on('setPreferences', (e, data) => {
+	savePreferences(data);
+	e.sender.send('setPreferencesComplete');
 });

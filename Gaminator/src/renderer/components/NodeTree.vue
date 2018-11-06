@@ -30,7 +30,6 @@
 		watch: {
 			value: function() {
 				var me = this;
-				debugger;
 				me.handleClick();
 			}
 		}

@@ -2,7 +2,6 @@
 	<v-layout row>
 		<v-flex xs12 md5>
 			<v-card>
-				
 				<v-toolbar class="primary">
 					<v-toolbar-title v-if="rootDir.label">
 						<v-tooltip bottom>
@@ -12,10 +11,18 @@
 					</v-toolbar-title>
 					<v-spacer></v-spacer>
 					<v-btn icon
+						v-if="!rootDir || rootDir === '/'"
 						@click="selectBase()">
 						<v-icon>search</v-icon>
 					</v-btn>
 				</v-toolbar>
+
+				<span :key="child.label"
+					v-for="child in rootDir.children">
+					<tree
+						:tree-data="child"
+						@node-click="onNodeClick"></tree>
+				</span>
 			</v-card>
 		</v-flex>
 
@@ -36,9 +43,9 @@
 </template>
 
 <script>
-	const fs = require('fs'),
-		path = require('path'),
-		walkdir = require('walkdir');
+	import fs from 'fs';
+	import path from 'path';
+	import electron from 'electron';
 
 	import Tree from './Tree';
 
@@ -47,108 +54,87 @@
 		components: {
 			Tree
 		},
+		mounted() {
+			this.$electron.ipcRenderer.send('getPreferences');
+
+			//Setup listeners
+			this.$electron.ipcRenderer.on('getPreferences', this.onGetPreferences);
+			this.$electron.ipcRenderer.on('setPreferencesComplete', this.onSetPreferencesComplete);
+		},
 		data: () => ({
 			rootDir: {
 				path: '',
 				label: '',
 				isFile: false,
 				icon: 'folder',
-				children: ''
-				/* path: '',
-				label: 'A cool folder',
-				icon: 'folder',
-				children: [{
-					path: '',
-					label: 'A cool sub-folder 1',
-					icon: 'folder',
-					children: [{
-						path: '',
-						label: 'A cool sub-sub-folder 1',
-						icon: 'folder',
-						children: [{
-							path: '',
-							label: 'A cool sub-sub-sub-file 1',
-							icon: 'business_center',
-							children: []
-						}]
-					}]
-				}, {
-					path: 'C:\\A cool sub-folder 2',
-					label: 'A cool sub-folder 2',
-					icon: 'business_center',
-					children: []
-				}] */
+				children: []
 			}
 		}),
 		methods: {
+			onGetPreferences(e, preferences) {
+				if(preferences.data.rootDir !== '/') {
+					let path = preferences.data.rootDir,
+						pathSplit = path.split('/'),
+						label = pathSplit[pathSplit.length-1],
+						isFile = false,
+						icon = 'folder',
+						children = this.getNodeChildren(path);
+
+					this.rootDir = {
+						path: path,
+						label: label,
+						isFile: isFile,
+						icon: icon,
+						children: children
+					};
+				}
+			},
+			onSetPreferencesComplete(e) {
+				this.$electron.ipcRenderer.send('getPreferences');
+			},
 			selectBase() {
-				debugger;
 				this.$electron.remote.dialog.showOpenDialog({properties: ['openDirectory']}, (dirs) => {
 					if(dirs) {
 						this.rootDir.path = dirs[0];
 						this.rootDir.label = path.basename(dirs[0]);
-						this.rootDir.children = [];
-
-						fs.readdir(this.rootDir.path, {withFileTypes: true}, (err, files) => {
-							for(let x = 0; x < files.length; x++) {
-								let absPath = `${this.rootDir.path}/${files[x]}`;
-								fs.stat(absPath, (err, file) => {
-									let label = files[x].replace(this.rootDir.path, '').replace(/^[/\\]/, '');
-									let isFile = !file.isDirectory();
-									if(isFile) {
-										this.rootDir.children.push({
-											path: files[x],
-											label: label,
-											isFile: isFile,
-											icon: 'business_center'	//replace with dynamic filetype icon
-										});
-										} else {
-											this.rootDir.children.push({
-												path: files[x],
-												label: label,
-												isFile: isFile,
-												icon: 'folder'
-											});
-									}
-								});
-							}
-						});
-						//Below is nice for allowing multiple directory/mixed selections.
-						/* fs.lstat(this.rootDir, (err, stats) => {
-							if(err) {
-								console.error('Error on '+ dirPath + ': ' + err);
-							}
-
-							if(stats.isDirectory()) {
-								debugger;
-								walkdir(this.rootDir, {max_depth: 1})
-									.on('file', (file, stats) => {
-										this.nodes.push({
-											title: file,
-											icon: 'business_center'
-										});
-									})
-									.on('directory', (folder, stats) => {
-										let title = folder.replace(this.rootDir, '');
-										title = title.replace(/^[/\\]/, '');
-										this.nodes.push({
-											title: title,
-											icon: 'folder'
-										});
-									})
-									.on('error', (fn, err) => {
-										console.error(`!!!! ${fn} ${err}`);
-									});
-							}
-						}); */
+						this.rootDir.children = this.getNodeChildren(dirs[0]);
 					}
 				});
 			},
-			logClick(node) {
-				if(node.children && node.children.length > 0) {
-					console.log(`You opened the "${node.label}" folder.`);
-				} else {
-					console.log(`You clicked the "${node.label}" file.`);
+			getNodeChildren(parentPath) {
+				let nodeChildren = [],
+					files = fs.readdirSync(parentPath, {withFileTypes: true});
+
+				for(let x = 0; x < files.length; x++) {
+					let filePath = path.join(parentPath, files[x]),//`${parentPath}/${files[x]}`,
+						fileStats = fs.statSync(filePath),
+						label = files[x].replace(parentPath, '').replace(/^[/\\]/, ''),
+						isFile = !fileStats.isDirectory();
+
+					if(isFile) {
+						nodeChildren.push({
+							path: filePath,
+							label: label,
+							isFile: isFile,
+							icon: 'business_center',	//replace with dynamic filetype icon
+							children: []
+						});
+					} else {
+						nodeChildren.push({
+							path: filePath,
+							label: label,
+							isFile: isFile,
+							icon: 'folder',
+							children: []
+						});
+					}
+				}
+
+				return nodeChildren;
+			},
+			onNodeClick(node) {
+				if(!node.isFile) {
+					node.children = this.getNodeChildren(node.path);
 				}
 			}
 		}

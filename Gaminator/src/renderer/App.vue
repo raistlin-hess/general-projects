@@ -28,7 +28,8 @@
 			</v-content>
 
 			<!-- Error block -->
-			<v-dialog persistent max-width="350"
+			<v-dialog max-width="350"
+				persistent
 				v-model="showError">
         <v-card class="primary">
           <v-card-title class="headline">Error</v-card-title>
@@ -41,6 +42,9 @@
           </v-card-actions>
         </v-card>
       </v-dialog>
+
+			<preferences
+				:showPreferences.sync="showPreferences"></preferences>
 		</v-app>
 	</div>
 </template>
@@ -49,9 +53,9 @@
 	import Vue from 'vue';
 	import Vuetify from 'vuetify';
 	import colors from 'vuetify/es5/util/colors';
-
-alert('Need to have way to specify RootDirectories.\n Create preferences window to allow changing this.\n Draw directory list of selected directories.');
-
+	import mixins from './mixins.js';
+	import Preferences from './components/popups/Preferences';
+	
 	Vue.use(Vuetify, {
 		theme: {
 			primary: colors.green.base,
@@ -67,18 +71,26 @@ alert('Need to have way to specify RootDirectories.\n Create preferences window 
 		}
 	});
 
+	//Apply mixins globally to all components.
+	Vue.mixin(mixins);
+alert('Need to find way to limit App to Viewport dimensions.');
 	export default {
 		name: 'gaminator',
+		components: {
+			Preferences
+		},
 		methods: {
 			onAppMenuClick(item, index) {
 				let scopeFn = this[item.fn];
-				if(!scopeFn) {
+				if(scopeFn) {
+					scopeFn();
+				} else {
 					this.showError = true;
 					this.errMsg = `${item.title} does not have a function defined!`;
-					return;
 				}
-
-				scopeFn();
+			},
+			onPreferences() {
+				this.showPreferences = true;
 			},
 			onExit() {
 				this.$electron.ipcRenderer.send('onExit');
@@ -91,6 +103,7 @@ alert('Need to have way to specify RootDirectories.\n Create preferences window 
 				// { icon: 'bubble_chart', name: 'Inspire', to: '/inspire' }
 			],
 			showError: false,
+			showPreferences: false,
 			errMsg: '',
 			appMenuItems: [{
 				title: 'Preferences',
@@ -109,10 +122,9 @@ alert('Need to have way to specify RootDirectories.\n Create preferences window 
 <!-- Styles are applied globally. -->
 <style>
 	@import url('assets/MaterialIcons.css');
-	html {
+	/* html {
 		overflow-y: hidden;
-	}
-	/* @import url('https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons'); */
+	} */
 	span#tip {
 		font-weight: bold;
 		font-size: 125%;
