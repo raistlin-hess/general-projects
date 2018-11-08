@@ -1,7 +1,7 @@
 <template>
 	<div id="app">
 		<v-app dark>
-			<v-toolbar fixed app class="primary">
+			<v-toolbar clipped-left fixed app class="primary">
 				<v-menu transition="slide-x-transition">
 						<v-btn icon slot="activator">
 							<v-icon>more_vert</v-icon>
@@ -20,7 +20,7 @@
 			</v-toolbar>
 		
 			<v-content>
-				<v-container wrap fluid fill-height grid-list-md>
+				<v-container fluid align-start grid-list-lg>
 					<v-slide-y-transition mode="out-in">
 						<router-view></router-view>
 					</v-slide-y-transition>
@@ -52,19 +52,19 @@
 <script>
 	import Vue from 'vue';
 	import Vuetify from 'vuetify';
-	import colors from 'vuetify/es5/util/colors';
-	import mixins from './mixins.js';
+	import Colors from 'vuetify/es5/util/colors';
+	import Mixins from './mixins.js';
 	import Preferences from './components/popups/Preferences';
 	
 	Vue.use(Vuetify, {
 		theme: {
-			primary: colors.green.base,
-			secondary: colors.green.lighten2,
-			accent: colors.green.darken3,
-			error: colors.red.accent4,
-			warning: colors.yellow.base,
-			info: colors.blue.base,
-			success: colors.green.base
+			primary: Colors.green.base,
+			secondary: Colors.green.lighten2,
+			accent: Colors.green.darken3,
+			error: Colors.red.accent4,
+			warning: Colors.yellow.base,
+			info: Colors.blue.base,
+			success: Colors.green.base
 		},
 		options: {
 			customProperties: true	//https://vuetifyjs.com/en/style/theme
@@ -72,8 +72,7 @@
 	});
 
 	//Apply mixins globally to all components.
-	Vue.mixin(mixins);
-alert('Need to find way to limit App to Viewport dimensions.');
+	Vue.mixin(Mixins);
 	export default {
 		name: 'gaminator',
 		components: {
@@ -122,9 +121,11 @@ alert('Need to find way to limit App to Viewport dimensions.');
 <!-- Styles are applied globally. -->
 <style>
 	@import url('assets/MaterialIcons.css');
-	/* html {
+	@import url('assets/Scrollbar.css');
+
+	html {
 		overflow-y: hidden;
-	} */
+	}
 	span#tip {
 		font-weight: bold;
 		font-size: 125%;

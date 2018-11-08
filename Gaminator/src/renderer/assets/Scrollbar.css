@@ -1,0 +1,25 @@
+::-webkit-scrollbar {
+	width: 10px;
+}
+
+::-webkit-scrollbar-track {
+	width: 10px;
+}
+
+::-webkit-scrollbar-track:hover {
+	width: 20px;
+}
+
+::-webkit-scrollbar-thumb {
+	background-color: var(--v-accent-base);
+	border-radius: 10px;
+	-webkit-transition: all 1s ease-in-out;
+	transition: all 1s ease-in-out;
+	width: 10px;
+	/* opacity: 0.2; */
+}
+::-webkit-scrollbar-thumb:hover {
+	-webkit-transition: all 1s ease-in-out;
+	transition: all 1s ease-in-out;
+	width: 20px;
+}

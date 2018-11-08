@@ -1,26 +1,27 @@
 <template>
 	<div class="tree">
 		<div id="tree-list">
-			<node-tree
+			<node
 				:node="treeData"
-				:handle-click="handleClick"></node-tree>
+				:handle-click="handleClick"></node>
 		</div>
 	</div>
 </template>
 
 <script>
-	import NodeTree from './NodeTree';
+	import Node from './Node';
+	
 	export default {
 		name: 'tree',
 		components: {
-			NodeTree
+			Node
 		},
 		props: {
 			treeData: Object
 		},
 		methods: {
-			handleClick(node) {
-				this.$emit('node-click', node);
+			handleClick(node, isOpen) {
+				this.$emit('node-click', node, isOpen);
 			}
 		}
 	}
