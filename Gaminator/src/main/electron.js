@@ -25,7 +25,7 @@ const defaults = {
 };
 let p = path.join((app || Remote).getPath('userData'), 'preferences.json');
 if(!fs.existsSync(p)) {
-	console.log('Does not exist.');
+	console.log('Preferences does not exist.');
 }
 const preferences = new Store({
 	configName: 'preferences',

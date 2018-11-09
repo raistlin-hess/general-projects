@@ -1,32 +1,37 @@
 <template>
 	<v-layout>
 		<v-navigation-drawer permanent app clipped left
-			style="width: 30vw;">
+			style="width: 50vw;">
 			<v-toolbar class="primary">
-				<v-toolbar-title v-if="rootDir.label">
-					<v-tooltip bottom>
-						<span slot="activator">{{ rootDir.label }}</span>
-						<span id="tip">{{ rootDir.path }}</span>
-					</v-tooltip>
-				</v-toolbar-title>
-				<v-spacer></v-spacer>
-				<v-btn icon
-					v-if="!rootDir || rootDir === '/'"
-					@click="selectBase()">
-					<v-icon>search</v-icon>
-				</v-btn>
+				<template v-if="rootDir.label != ''">
+					<v-toolbar-title>
+						<v-tooltip bottom>
+							<span slot="activator">{{ rootDir.label }}</span>
+							<span id="tip">{{ rootDir.path }}</span>
+						</v-tooltip>
+					</v-toolbar-title>
+				</template>
+				<template v-else>
+					<v-toolbar-title>
+						<v-tooltip bottom>
+							<span slot="activator">Please select a directory to begin.</span>
+							<span id="tip">Please select a directory to begin.</span>
+						</v-tooltip>
+					</v-toolbar-title>
+					<v-spacer></v-spacer>
+					<v-btn icon
+						v-if="rootDir.label === ''"
+						@click="selectBase()">
+						<v-icon>search</v-icon>
+					</v-btn>
+				</template>
 			</v-toolbar>
 
-			<span :key="child.label"
-				v-for="child in rootDir.children">
-				<tree
-					:tree-data="child"
-					@node-click="onNodeClick"></tree>
-			</span>
+			<grid></grid>
 		</v-navigation-drawer>
 		
 		<v-navigation-drawer permanent app clipped right
-			style="width: 70vw;">
+			style="width: 50vw;">
 				<v-card>
 						<v-img src="https://picsum.photos/510/300?random" aspect-ratio=1></v-img>
 				</v-card>
@@ -41,11 +46,13 @@
 	import FS from 'fs';
 	import Path from 'path';
 	import Tree from './Tree';
+	import Grid from './Grid';
 
 	export default {
 		name: 'home',
 		components: {
-			Tree
+			Tree,
+			Grid
 		},
 		mounted() {
 			this.$electron.ipcRenderer.send('getPreferences');
@@ -82,6 +89,9 @@
 						this.rootDir.path = dirs[0];
 						this.rootDir.label = Path.basename(dirs[0]);
 						this.rootDir.children = this.getNodeChildren(dirs[0]);
+						this.savePreferences({
+							rootDir: this.rootDir.path
+						});
 					}
 				});
 			},
@@ -135,4 +145,5 @@
 </script>
 
 <style scoped>
+
 </style>
