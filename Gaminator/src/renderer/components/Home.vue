@@ -7,11 +7,40 @@
 		
 		<v-navigation-drawer permanent app clipped right
 			style="width: 50vw; height: 100vh;">
-				<v-card>
-						<v-img src="https://picsum.photos/510/300?random" height="50vh"></v-img>
+				<v-card max-height="60vh">
+						<v-img src="https://picsum.photos/510/300?random" height="60vh"></v-img>
 				</v-card>
-				<v-card max-height="50vh">
-					
+				<v-card max-height="40vh">
+					<v-layout row height="20vh">
+						<v-card-text lg4>
+							<span class="headline">Manufacturer:<br></span>
+							{{selectedGame.manufacturer}}
+						</v-card-text>
+						<v-card-text lg4>
+							<span class="headline">System:<br></span>
+							{{selectedGame.system}}
+						</v-card-text>
+						<v-card-text lg4>
+							<span class="headline">Year:<br></span>
+							{{selectedGame.year}}
+						</v-card-text>
+					</v-layout>
+					<v-layout row height="20vh">
+						<v-card-text lg4>
+							<span class="headline">Rating:<br></span>
+							<v-rating dense hover
+								:v-model="gameRating"></v-rating>
+								replace stupid rating with buttons.
+						</v-card-text>
+						<v-card-text lg4>
+							<span class="headline">Play Time:<br></span>
+							{{selectedGame.playTime}}
+						</v-card-text>
+						<v-card-text lg4>
+							<span class="headline">Notes:<br></span>
+							{{selectedGame.notes}}
+						</v-card-text>
+					</v-layout>
 				</v-card>
 		</v-navigation-drawer>
 	</v-layout>
@@ -42,11 +71,26 @@
 				this.$electron.ipcRenderer.send('getPreferences');
 			},
 			onGameSelected(game) {
-				console.log(`Selected ${game.name}.`);
+				this.selectedGame = game;
+				// this.gameRating = game.rating;
+			}
+		},
+		watch: {
+			gameRating(value) {
+				console.log(value);
 			}
 		},
 		data: () => ({
-			games: [{}]
+			games: [{}],
+			selectedGame: {
+				manufacturer: '',
+				system: '',
+				year: '',
+				rating: 0,
+				playTime: 0,
+				notes: ''
+			},
+			gameRating: 0
 		})
 	}
 </script>
