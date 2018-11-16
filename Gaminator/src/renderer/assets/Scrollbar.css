@@ -16,7 +16,6 @@
 	-webkit-transition: all 1s ease-in-out;
 	transition: all 1s ease-in-out;
 	width: 10px;
-	/* opacity: 0.2; */
 }
 ::-webkit-scrollbar-thumb:hover {
 	-webkit-transition: all 1s ease-in-out;

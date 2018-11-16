@@ -1,6 +1,5 @@
 <template>
-	<v-dialog max-width="600" max-height="600"
-		persistent
+	<v-dialog persistent
 		v-model="showPreferences">
 		<v-card>
 			<v-card-title class="headline">
@@ -12,8 +11,8 @@
 			<v-card-text :key="key"
 				v-for="(val, key) in preferences">
 				<!-- Directory Type -->
-				<span v-if="key === 'rootDir'">
-					{{key}}:
+				<!-- <template v-if="key === 'rootDir'"> -->
+					<!-- {{key}}:
 					<v-toolbar class="primary">
 						<v-toolbar-title>
 							{{val}}
@@ -23,23 +22,41 @@
 							@click="selectRootDir()">
 							<v-icon>search</v-icon>
 						</v-btn>
-					</v-toolbar>
-				</span>
+					</v-toolbar> -->
+				<!-- </template> -->
 				<!-- Boolean Type -->
 				<!-- Needs more work. Two-way binding isn't working. -->
 				<!-- <span v-else-if="typeof val == 'boolean'">
 					<v-switch :label="key"
 						:v-model="val"></v-switch>
 				</span> -->
-				<span v-else>
-					{{key}} : {{val}}
-				</span>
+				<!-- Rom Dirs -->
+				<template v-if="key === 'dirs'">
+					<span
+						:key="emulator"
+						v-for="(path, emulator) in val">
+						{{emulator.toUpperCase()}}: 
+						<v-toolbar class="primary">
+							<v-toolbar-title>
+								{{path}}
+							</v-toolbar-title>
+							<v-spacer></v-spacer>
+							<v-btn icon
+								@click="selectEmulatorDir(emulator)">
+								<v-icon>search</v-icon>
+							</v-btn>
+						</v-toolbar>
+					</span>
+				</template>
+				<template v-else>
+					{{key}}: {{val}}
+				</template>
 			</v-card-text>
 
 			<v-card-actions>
 				<v-spacer></v-spacer>
-				<v-btn @click.native="onCloseClick">Close</v-btn>
-				<v-btn @click.native="onSaveClick">Save</v-btn>
+				<v-btn color="primary" @click.native="onCloseClick">Close</v-btn>
+				<v-btn color="primary" @click.native="onSaveClick">Save</v-btn>
 			</v-card-actions>
 		</v-card>
 	</v-dialog>
@@ -49,10 +66,10 @@
 	export default {
 		name: 'preferences',
 		methods: {
-			selectRootDir() {
+			selectEmulatorDir(emulator) {
 				this.$electron.remote.dialog.showOpenDialog({properties: ['openDirectory']}, (dirs) => {
 					if(dirs) {
-						this.preferences.rootDir = dirs[0];
+						this.preferences.dirs[emulator] = dirs[0];
 					}
 				});
 			},
@@ -69,14 +86,23 @@
 		},
 		data: () => ({
 			preferences: {
-				rootDir: '/'
+				dirs: {
+					n64: '',
+					snes: '',
+					nes: '',
+					mame: ''
+				}
 			}
 		}),
-		mounted() {
-			this.$electron.ipcRenderer.send('getPreferences');
-			this.$electron.ipcRenderer.on('getPreferences', (e, preferences) => {
-				this.preferences = preferences.data;
-			});
+		watch: {
+			showPreferences(newValue) {
+				if(!!newValue) {
+					this.$electron.ipcRenderer.send('getPreferences');
+					this.$electron.ipcRenderer.on('getPreferences', (e, preferences) => {
+						this.preferences = preferences.data;
+					});
+				}
+			}
 		}
 	}
 </script>

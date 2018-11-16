@@ -1,7 +1,7 @@
 import { app, BrowserWindow, Remote, ipcMain } from 'electron';
 import Store from './store.js';
-import fs from 'fs';
-import path from 'path';
+import FS from 'fs';
+import Path from 'path';
 
 
 /**
@@ -17,14 +17,26 @@ const winURL = process.env.NODE_ENV === 'development'
 	: `file://${__dirname}/index.html`;
 
 //Create initial preferences
+let appDataDir = Path.join((app || Remote).getPath('userData')),
+	preferencesDir = Path.join(appDataDir, 'preferences.json');
+
+FS.readFile(Path.join(__dirname, 'masterList.db'), (err, data) => {
+	FS.writeFileSync(Path.join(appDataDir, 'masterList.db'), data);
+});
+
 const defaults = {
 	windowWidth: 800,
 	windowHeight: 800,
 	isMaximized: false,
-	rootDir: '/'
+	appDataDir: appDataDir,
+	dirs: {
+		n64: '',
+		snes: '',
+		nes: '',
+		mame: ''
+	}
 };
-let p = path.join((app || Remote).getPath('userData'), 'preferences.json');
-if(!fs.existsSync(p)) {
+if(!FS.existsSync(preferencesDir)) {
 	console.log('Preferences does not exist.');
 }
 const preferences = new Store({
@@ -38,6 +50,7 @@ function savePreferences(newPreferences) {
 		newPreferences.windowWidth = width;
 		newPreferences.windowHeight = height;
 		newPreferences.isMaximized = mainWindow.isMaximized();
+		newPreferences.appDataDir = appDataDir;
 	}
 
 	preferences.set(newPreferences);

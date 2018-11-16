@@ -20,14 +20,14 @@
 			</v-toolbar>
 		
 			<v-content>
-				<v-container fluid align-start grid-list-lg>
+				<v-container align-start grid-list-lg>
 					<v-slide-y-transition mode="out-in">
 						<router-view></router-view>
 					</v-slide-y-transition>
 				</v-container>
 			</v-content>
 
-			<!-- Error block -->
+			<!-- Dialog boxes -->
 			<v-dialog max-width="350"
 				persistent
 				v-model="showError">
@@ -43,8 +43,8 @@
         </v-card>
       </v-dialog>
 
-			<preferences
-				:showPreferences.sync="showPreferences"></preferences>
+			<preferences :showPreferences.sync="showPreferences"></preferences>
+			<run-directory-cache :showRunDirectoryCache.sync="showRunDirectoryCache"></run-directory-cache>
 		</v-app>
 	</div>
 </template>
@@ -53,8 +53,10 @@
 	import Vue from 'vue';
 	import Vuetify from 'vuetify';
 	import Colors from 'vuetify/es5/util/colors';
+	
 	import Mixins from './mixins.js';
 	import Preferences from './components/popups/Preferences';
+	import RunDirectoryCache from './components/popups/RunDirectoryCache';
 
 	//Define theme styles
 	Vue.use(Vuetify, {
@@ -112,7 +114,8 @@
 	export default {
 		name: 'gaminator',
 		components: {
-			Preferences
+			Preferences,
+			RunDirectoryCache
 		},
 		methods: {
 			onAppMenuClick(item, index) {
@@ -127,6 +130,9 @@
 			onPreferences() {
 				this.showPreferences = true;
 			},
+			onRunDirectoryCache() {
+				this.showRunDirectoryCache = true;
+			},
 			onExit() {
 				this.$electron.ipcRenderer.send('onExit');
 				window.close();
@@ -134,11 +140,11 @@
 		},
 		data: () => ({
 			routes: [
-				{ icon: 'apps', name: 'Gaminator', to: '/' },
-				// { icon: 'bubble_chart', name: 'Inspire', to: '/inspire' }
+				{ icon: 'apps', name: 'Gaminator', to: '/' }
 			],
 			showError: false,
 			showPreferences: false,
+			showRunDirectoryCache: false,
 			errMsg: '',
 			appMenuItems: [{
 				title: 'Preferences',

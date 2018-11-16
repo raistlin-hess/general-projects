@@ -5,10 +5,10 @@
 			:hide-actions="node.isFile">
 			<span slot="header">
 				<v-icon>{{node.icon}}</v-icon>
-				{{node.label}}
+				{{node.name}}
 			</span>
 			<v-card id="thisNode">
-				<node :key="child.label"
+				<node :key="child.name"
 					v-for="child in node.children"
 					:node="child"
 					:handle-click="handleClick"></node>
@@ -26,9 +26,8 @@
 			value: Number
 		},
 		watch: {
-			value: function() {
+			value() {
 				let isOpen = arguments[0] === 0;
-
 				this.handleClick(this.node, isOpen);
 			}
 		}
