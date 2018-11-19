@@ -2,7 +2,11 @@ import { app, BrowserWindow, Remote, ipcMain } from 'electron';
 import Store from './store.js';
 import FS from 'fs';
 import Path from 'path';
+import { spawn, exec } from 'child_process';	//https://medium.freecodecamp.org/node-js-child-processes-everything-you-need-to-know-e69498fe970a
 
+//Global references
+let mainWindow, childProcess, gameStartTime,
+	wasForceClosed = false;
 
 /**
  * Set `__static` path to static files in production
@@ -11,7 +15,6 @@ import Path from 'path';
 if(process.env.NODE_ENV !== 'development') {
 	global.__static = require('path').join(__dirname, '/static').replace(/\\/g, '\\\\');
 }
-let mainWindow;
 const winURL = process.env.NODE_ENV === 'development'
 	? `http://localhost:9080`
 	: `file://${__dirname}/index.html`;
@@ -43,6 +46,24 @@ const preferences = new Store({
 	configName: 'preferences',
 	defaults: defaults
 });
+
+app.on('ready', createMainWindow);
+
+app.on('window-all-closed', () => {
+	if(process.platform !== 'darwin') {
+		app.quit();
+	}
+});
+
+app.on('activate', () => {
+	if(mainWindow === null) {
+		createMainWindow();
+	}
+});
+
+/**
+ * Function definitions
+ */
 
 function savePreferences(newPreferences) {
 	if(newPreferences) {
@@ -89,24 +110,18 @@ function createMainWindow() {
 	});
 }
 
-app.on('ready', createMainWindow);
+function onChildExit(e, selectedGame) {
+	let duration = new Date().getTime() - gameStartTime;
+	duration = parseFloat((duration/1000).toFixed(0));
 
-app.on('window-all-closed', () => {
-	if(process.platform !== 'darwin') {
-		app.quit();
-	}
-});
-
-app.on('activate', () => {
-	if(mainWindow === null) {
-		createMainWindow();
-	}
-});
+	e.sender.send('endGame', duration);
+	childProcess = null;
+	gameStartTime = null;
+}
 
 /**
- * Main <> Renderer Listeners
+ * Main <-> Renderer Listeners
  */
-
 ipcMain.on('onExit', () => {
 	savePreferences();
 });
@@ -118,4 +133,47 @@ ipcMain.on('getPreferences', (e, data) => {
 ipcMain.on('setPreferences', (e, data) => {
 	savePreferences(data);
 	e.sender.send('setPreferencesComplete');
+});
+
+ipcMain.on('startGame', (e, selectedGame) => {
+	if(childProcess) {
+		e.sender.send('playGameError', 'There is already another game running.');
+	}
+
+	let emulator = selectedGame.system,
+		dirs = preferences.get('dirs'),
+		gameAbsPath, processName;
+
+	switch(emulator) {
+		case 'MAME':
+			gameAbsPath = Path.join(dirs.mame, selectedGame.filename);
+			processName = 'PAUSE';
+			break;
+		default:
+			console.error(`Cannot play games with emulator: ${emulator}`);
+			e.sender.send('playGameError', 'This emulator is not currently supported.');
+			return;
+	}
+
+	gameAbsPath = `"${gameAbsPath}"`;
+	gameStartTime = new Date().getTime();
+	console.log(`Process: ${processName}\nPath: ${gameAbsPath}`);
+	childProcess = spawn(processName, [gameAbsPath], {
+		shell: true
+	});
+	childProcess.on('close', () => {
+		if(!wasForceClosed) {
+			onChildExit(e, selectedGame);
+		}
+
+		wasForceClosed = false;
+	});
+});
+
+ipcMain.on('forceClose', (e, selectedGame) => {
+	if(childProcess) {
+		childProcess.kill();
+		onChildExit(e);
+	}
+	wasForceClosed = true;
 });

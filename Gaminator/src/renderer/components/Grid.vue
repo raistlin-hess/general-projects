@@ -15,7 +15,8 @@
 					<td>{{props.item.name}}</td>
 					<td>{{props.item.system}}</td>
 					<td>{{props.item.playCount}}</td>
-					<td>{{props.item.playTime}}</td>
+					<td>{{formatPlaytime(props.item.playTime)}}</td>
+					<!-- <td>{{props.item.playTime}}</td> -->
 					<td>
 						<v-rating half-increments dense readonly
 							:value="props.item.rating"></v-rating>
@@ -116,7 +117,7 @@
 				this.$emit('gameSelected', this.games[this.selectedRowIndex]);
 			},
 			pagination() {
-					this.loadGameListDatabase();
+				this.loadGameListDatabase();
 			}
 		},
 		methods: {
@@ -136,6 +137,7 @@
 					sortBy = me.pagination.sortBy,
 					descending = me.pagination.descending ? -1 : 1,
 					rowsPerPage = me.pagination.rowsPerPage,
+					sortObj = {},
 					appData = Path.join(me.appDataDir, 'gameList.db'),
 					db = new Nedb({
 						autoload: true,
@@ -147,8 +149,45 @@
 					return;
 				}
 
+				//Use stupid switch because the property cannot be substituted...
+				switch(sortBy) {
+					case 'name':
+						sortObj.name = descending;
+						break;
+					case 'filename':
+						sortObj.filename = descending;
+						break;
+					case 'system':
+						sortObj.system = descending;
+						break;
+					case 'playCount':
+						sortObj.playCount = descending;
+						break;
+					case 'playTime':
+						sortObj.playTime = descending;
+						break;
+					case 'rating':
+						sortObj.rating = descending;
+						break;
+					case 'ratingCount':
+						sortObj.ratingCount = descending;
+						break;
+					case 'year':
+						sortObj.year = descending;
+						break;
+					case 'manufacturer':
+						sortObj.manufacturer = descending;
+						break;
+					case 'notes':
+						sortObj.notes = descending;
+						break;
+					default:
+						sortObj.name = descending;
+						break;
+				}
+
 				db.find({})
-					.sort({name: descending})
+					.sort(sortObj)
 					.exec(function(err, records) {
 						me.onGameListLoaded(err, records);
 					});
@@ -160,6 +199,7 @@
 				}
 				this.selectedRowIndex = 0;
 				this.games = records || [];
+				this.$emit('gameSelected', this.games[this.selectedRowIndex]);
 			}
 		},
 		data: () => ({

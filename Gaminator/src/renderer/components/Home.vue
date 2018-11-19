@@ -34,15 +34,57 @@
 						</v-card-text>
 						<v-card-text lg4>
 							<span class="headline">Play Time:<br></span>
-							{{selectedGame.playTime}}
+							{{ formatPlaytime(selectedGame.playTime) }}
 						</v-card-text>
 						<v-card-text lg4>
 							<span class="headline">Notes:<br></span>
 							{{selectedGame.notes}}
 						</v-card-text>
 					</v-layout>
+					<v-layout row height="5vh">
+						<v-btn class="primary"
+							@click="onPlayClick">
+							Play
+							<v-icon>play_arrow</v-icon>
+						</v-btn>
+					</v-layout>
 				</v-card>
 		</v-navigation-drawer>
+
+		<v-dialog persistent max-width="700"
+			v-model="playingGame">
+			<v-card>
+				<v-card-title class="headline">
+					Now Playing:&nbsp;&nbsp;<em>{{selectedGame.name}}</em>
+				</v-card-title>
+				<v-card-text>
+					If you would like to force the the game to stop, please click the button below.
+				</v-card-text>
+				<v-card-actions>
+					<v-spacer></v-spacer>
+					<v-btn class="primary" @click.native="onForceClose">Force Close</v-btn>
+					<v-spacer></v-spacer>
+				</v-card-actions>
+			</v-card>
+		</v-dialog>
+
+		<v-dialog persistent max-width="500"
+			v-model="showErrorMsg">
+			<v-card>
+				<v-card-title class="headline">
+					Error
+					<v-spacer></v-spacer>
+					<v-btn icon @click.native="onErrorCloseClick"><v-icon>close</v-icon></v-btn>
+				</v-card-title>
+				<v-card-text>
+					{{errorMsg}}
+				</v-card-text>
+				<v-card-actions>
+					<v-spacer></v-spacer>
+					<v-btn class="primary" @click.native="showErrorMsg =false">Close</v-btn>
+				</v-card-actions>
+			</v-card>
+		</v-dialog>
 	</v-layout>
 </template>
 
@@ -59,38 +101,67 @@
 			Grid
 		},
 		mounted() {
-			// alert('Finish binding from Home.vue to Grid.vue.\nHave Grid.vue display all files from each dir in prefs, using the dir as the Console Type.');
 			this.$electron.ipcRenderer.send('getPreferences');
 
 			//Setup listeners
-			// this.$electron.ipcRenderer.on('getPreferences', this.onGetPreferences);
+			this.$electron.ipcRenderer.on('getPreferences', this.onGetPreferences);
 			this.$electron.ipcRenderer.on('setPreferencesComplete', this.onSetPreferencesComplete);
+			this.$electron.ipcRenderer.on('endGame', this.onEndGame);
+			this.$electron.ipcRenderer.on('playGameError', this.playGameError);
 		},
 		methods: {
+			onGetPreferences(e, preferences) {
+				this.appDataDir = preferences.data.appDataDir;
+			},
 			onSetPreferencesComplete(e) {
 				this.$electron.ipcRenderer.send('getPreferences');
 			},
 			onGameSelected(game) {
 				this.selectedGame = game;
-				// this.gameRating = game.rating;
-			}
-		},
-		watch: {
-			gameRating(value) {
-				console.log(value);
+				this.gameRating = game.rating;
+				//TODO: Add event when game selected. Maybe have repo of screenshots?
+				//Maybe have video playback?
+			},
+			onPlayClick() {
+				this.playingGame = true;
+				this.$electron.ipcRenderer.send('startGame', this.selectedGame);
+			},
+			onForceClose() {
+				this.$electron.ipcRenderer.send('forceClose');
+			},
+			onEndGame(emitter, totalPlaytime) {
+				this.playingGame = false;
+				this.selectedGame.playTime += totalPlaytime;
+				this.selectedGame.playCount += 1;
+
+				this.updateGame(this.appDataDir, this.selectedGame);
+				this.$electron.ipcRenderer.send('getPreferences');
+			},
+			playGameError(emitter, message) {
+				this.playingGame = false;
+				this.showErrorMsg = true;
+				this.errorMsg = message;
 			}
 		},
 		data: () => ({
+			appDataDir: '',
+			gameRating: 0,
+			playingGame: false,
+			errorMsg: '',
+			showErrorMsg: false,
 			games: [{}],
 			selectedGame: {
-				manufacturer: '',
+				gameId: '',
+				name: '',
+				filename: '',
 				system: '',
-				year: '',
-				rating: 0,
+				playCount: 0,
 				playTime: 0,
+				rating: 0,
+				year: '',
+				manufacturer: '',
 				notes: ''
-			},
-			gameRating: 0
+			}
 		})
 	}
 </script>

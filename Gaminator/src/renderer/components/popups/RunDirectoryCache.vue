@@ -106,10 +106,8 @@
 						console.log('All buildList promises complete.');
 						db.insert(gamesToInsert[0], (err) => {
 							if(err) {
-								debugger;
 								throw err;
 							}
-							debugger;
 							console.log('DB Update complete.');
 							me.caching = false;
 							me.confirmDialog = false;
@@ -145,7 +143,7 @@
 						gameName = gameBasename,
 						gameFilename = game.name,
 						gameObj = {
-								id: Crypto.createHash('md5').update(gameFilename).digest('hex'),
+								gameId: Crypto.createHash('md5').update(gameFilename).digest('hex'),
 								name: gameBasename,
 								filename: gameFilename,
 								system: emulator.toUpperCase(),
@@ -160,7 +158,6 @@
 
 					masterListDb.find({filename: gameBasename}, (err, record) => {
 						if(record[0]) {
-							debugger;
 							gameObj.name = record[0].name;
 							gameObj.year = record[0].year;
 							gameObj.manufacturer = record[0].manufacturer;
