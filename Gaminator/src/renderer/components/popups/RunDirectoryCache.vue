@@ -149,8 +149,9 @@
 								system: emulator.toUpperCase(),
 								playCount: 0,
 								playTime: 0,
-								rating: 0,
+								goodRating: 0,
 								ratingCount: 0,
+								overallRating: 0,
 								year: '',
 								manufacturer: '',
 								notes: ''

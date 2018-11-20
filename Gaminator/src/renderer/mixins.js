@@ -1,5 +1,4 @@
 const Path = require('path');
-const {app, Remote } = require('electron');
 
 module.exports = {
 	methods: {
@@ -49,7 +48,7 @@ module.exports = {
 
 			return nodeChildren;
 		},
-		updateGame(appDataDir, game) {
+		updateGame(appDataDir, game, ipcRenderer) {
 			let Nedb = require('nedb'),
 				db = new Nedb({
 					autoload: true,
@@ -65,12 +64,14 @@ module.exports = {
 				db.update({_id: record._id}, {$set: {
 					playCount: game.playCount,
 					playTime: game.playTime,
-					rating: game.rating,
-					ratingCount: game.ratingCount
+					goodRating: game.goodRating,
+					ratingCount: game.ratingCount,
+					overallRating: game.overallRating
 				}}, (err, numReplaced) => {
 					if(err) {
 						throw err;
 					}
+					ipcRenderer.send('getPreferences');
 				});
 			});
 		}

@@ -15,12 +15,9 @@
 					<td>{{props.item.name}}</td>
 					<td>{{props.item.system}}</td>
 					<td>{{props.item.playCount}}</td>
+					<td>{{props.item.ratingCount}}</td>
+					<td>{{props.item.overallRating + '%'}}</td>
 					<td>{{formatPlaytime(props.item.playTime)}}</td>
-					<!-- <td>{{props.item.playTime}}</td> -->
-					<td>
-						<v-rating half-increments dense readonly
-							:value="props.item.rating"></v-rating>
-					</td>
 				</tr>
 			</template>
 		</v-data-table>
@@ -166,11 +163,11 @@
 					case 'playTime':
 						sortObj.playTime = descending;
 						break;
-					case 'rating':
-						sortObj.rating = descending;
-						break;
 					case 'ratingCount':
-						sortObj.ratingCount = descending;
+					sortObj.ratingCount = descending;
+						break;
+					case 'overallRating':
+						sortObj.overallRating = descending;
 						break;
 					case 'year':
 						sortObj.year = descending;
@@ -216,8 +213,9 @@
 				{text: 'Name', value: 'name'},
 				{text: 'System', value: 'system'},
 				{text: 'Play Count', value: 'playCount'},
-				{text: 'Total Playtime', value: 'playTime'},
-				{text: 'Rating', value: 'rating'}
+				{text: 'Rating Count', value: 'ratingCount'},
+				{text: 'Positive Rating', value: 'overallRating'},
+				{text: 'Total Playtime', value: 'playTime'}
 			]
 		})
 	}

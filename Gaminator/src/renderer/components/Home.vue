@@ -28,9 +28,15 @@
 					<v-layout row height="20vh">
 						<v-card-text lg4>
 							<span class="headline">Rating:<br></span>
-							<v-rating dense hover
-								:v-model="gameRating"></v-rating>
-								replace stupid rating with buttons.
+							<v-btn flat icon color="success"
+								@click="onGameRatingClick(true)">
+								<v-icon>thumb_up</v-icon>
+							</v-btn>
+							{{selectedGame.overallRating+'%'}}
+							<v-btn flat icon color="error"
+								@click="onGameRatingClick(false)">
+								<v-icon>thumb_down</v-icon>
+							</v-btn>
 						</v-card-text>
 						<v-card-text lg4>
 							<span class="headline">Play Time:<br></span>
@@ -118,7 +124,6 @@
 			},
 			onGameSelected(game) {
 				this.selectedGame = game;
-				this.gameRating = game.rating;
 				//TODO: Add event when game selected. Maybe have repo of screenshots?
 				//Maybe have video playback?
 			},
@@ -134,18 +139,25 @@
 				this.selectedGame.playTime += totalPlaytime;
 				this.selectedGame.playCount += 1;
 
-				this.updateGame(this.appDataDir, this.selectedGame);
-				this.$electron.ipcRenderer.send('getPreferences');
+				this.updateGame(this.appDataDir, this.selectedGame, this.$electron.ipcRenderer);
 			},
 			playGameError(emitter, message) {
 				this.playingGame = false;
 				this.showErrorMsg = true;
 				this.errorMsg = message;
+			},
+			onGameRatingClick(goodRating) {
+				this.selectedGame.ratingCount += 1;
+				if(goodRating) {
+					this.selectedGame.goodRating += 1;
+				}
+
+				this.selectedGame.overallRating = parseFloat((this.selectedGame.goodRating / this.selectedGame.ratingCount).toFixed(2)) * 100;
+				this.updateGame(this.appDataDir, this.selectedGame, this.$electron.ipcRenderer);
 			}
 		},
 		data: () => ({
 			appDataDir: '',
-			gameRating: 0,
 			playingGame: false,
 			errorMsg: '',
 			showErrorMsg: false,
@@ -157,7 +169,9 @@
 				system: '',
 				playCount: 0,
 				playTime: 0,
-				rating: 0,
+				ratingCount: 0,
+				goodRating: 0,
+				overallRating: 0,
 				year: '',
 				manufacturer: '',
 				notes: ''
