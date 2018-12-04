@@ -104,15 +104,24 @@
 				Promise.all(allPromises)
 					.then((gamesToInsert) => {
 						console.log('All buildList promises complete.');
-						db.insert(gamesToInsert[0], (err) => {
-							if(err) {
-								throw err;
-							}
-							console.log('DB Update complete.');
-							me.caching = false;
-							me.confirmDialog = false;
-							me.onCloseClick();
-						});
+						let insertPromises = [];
+						for(let x = 0; x < gamesToInsert.length; x++) {
+							insertPromises.push(new Promise((resolve, reject) => {
+								db.insert(gamesToInsert[x], (err) => {
+									if(err) {
+										throw err;
+									}
+									resolve();
+								});
+							}));
+						}
+						
+						Promise.all(insertPromises)
+							.then(() => {
+								me.caching = false;
+								me.confirmDialog = false;
+								me.onCloseClick();
+							});
 					});
 			},
 			buildList(emulatorDir, emulator, masterListDb) {

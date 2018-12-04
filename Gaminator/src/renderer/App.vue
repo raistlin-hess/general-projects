@@ -58,17 +58,19 @@
 	import Preferences from './components/popups/Preferences';
 	import RunDirectoryCache from './components/popups/RunDirectoryCache';
 
+	let vueTheme = {
+		primary: Colors.lightBlue.darken2,
+		secondary: Colors.blue.accent4,
+		accent: Colors.cyan.accent3,
+		error: Colors.red.base,
+		warning: Colors.yellow.base,
+		info: Colors.blue.darken4,
+		success: Colors.green.base
+	};
+
 	//Define theme styles
 	Vue.use(Vuetify, {
-		theme: {
-			primary: Colors.green.base,
-			secondary: Colors.green.lighten2,
-			accent: Colors.green.darken3,
-			error: Colors.red.accent4,
-			warning: Colors.yellow.base,
-			info: Colors.blue.base,
-			success: Colors.green.base
-		},
+		theme: vueTheme,
 		options: {
 			customProperties: true	//https://vuetifyjs.com/en/style/theme
 		}
@@ -81,13 +83,13 @@
 	//This allows adding transparency to the colors. For example: 
 	// --var-name: 250, 250, 120;
 	//background-color: rgba(var(--var-name), 0.4); = background-color: rgba(250, 250, 120, 0.4);
-	let primary = Colors.green.base+'',
-		secondary = Colors.green.lighten2+'',
-		accent = Colors.green.darken3+'',
-		error = Colors.red.accent4+'',
-		warning = Colors.yellow.base+'',
-		info = Colors.blue.base+'',
-		success = Colors.green.base+'';
+	let primary = vueTheme.primary + '',
+		secondary = vueTheme.secondary + '',
+		accent = vueTheme.accent + '',
+		error = vueTheme.error + '',
+		warning = vueTheme.warning + '',
+		info = vueTheme.info + '',
+		success = vueTheme.success + '';
 		
 	let primaryStr = `${parseInt(primary.substring(1, 3), 16)}, ${parseInt(primary.substring(3, 5), 16)}, ${parseInt(primary.substring(5, 7), 16)}`,
 		secondaryStr = `${parseInt(secondary.substring(1, 3), 16)}, ${parseInt(secondary.substring(3, 5), 16)}, ${parseInt(secondary.substring(5, 7), 16)}`,

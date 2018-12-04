@@ -223,10 +223,10 @@
 
 <style scoped>
 	tr.row-selected td {
-		background-color: rgba(var(--accent-rgb), 0.6);
+		background-color: rgba(var(--secondary-rgb), 0.6);
 	}
 
 	tr.row-selected:hover td {
-		background-color: rgba(var(--accent-rgb), 1);
+		background-color: rgba(var(--secondary-rgb), 1);
 	}
 </style>

@@ -32,6 +32,12 @@ const defaults = {
 	windowHeight: 800,
 	isMaximized: false,
 	appDataDir: appDataDir,
+	procDirs: {
+		n64: '',
+		snes: '',
+		nes: '',
+		mame: ''
+	},
 	dirs: {
 		n64: '',
 		snes: '',
@@ -89,10 +95,12 @@ function createMainWindow() {
 		mainWindow.maximize();
 	}
 	
+	mainWindow.show();
 	/**
 	 * Events
 	 */
 	mainWindow.on('closed', () => {
+		killAllEmulators();
 		mainWindow = null;
 	});
 	mainWindow.on('resize', () => {
@@ -119,6 +127,39 @@ function onChildExit(e, selectedGame) {
 	gameStartTime = null;
 }
 
+function killEmulatorByGame(selectedGame) {
+	exec('tasklist /fo csv', (err, stdout, stderr) => {
+		let list = stdout.split(/\r\n/),
+			emulator = selectedGame.system.toLowerCase(),
+			procDirs = preferences.get('procDirs'),
+			targetProcessName = Path.basename(procDirs[emulator]).toLowerCase();
+
+		for(let x = 0; x < list.length; x++) {
+			let listProcess = list[x].toLowerCase(),
+				listProcessArr = listProcess.replace(/"/g, '').split(','),
+				listProcessName = listProcessArr[0],
+				listProcessPid = parseInt(listProcessArr[1]);
+			if(listProcessName === targetProcessName) {
+				//Example of listProcess:
+				//	"SearchProtocolHost.exe","21144","Services","0","11,808 K"
+				process.kill(listProcessPid);
+			}
+		}
+		onChildExit(e);
+		wasForceClosed = true;
+	});
+}
+
+function killAllEmulators() {
+	let emulators = preferences.get('procDirs');
+	for(let emulator in emulators) {
+		let fakeGame = {
+			system: emulator
+		};
+		killEmulatorByGame(fakeGame);
+	}
+}
+
 /**
  * Main <-> Renderer Listeners
  */
@@ -140,14 +181,20 @@ ipcMain.on('startGame', (e, selectedGame) => {
 		e.sender.send('playGameError', 'There is already another game running.');
 	}
 
-	let emulator = selectedGame.system,
+	let emulator = selectedGame.system.toLowerCase(),
+		procDirs = preferences.get('procDirs'),
 		dirs = preferences.get('dirs'),
-		gameAbsPath, processName;
+		processArgs = [],
+		processName = `"${Path.join(procDirs[emulator])}"`,
+		gameAbsPath = `"${Path.join(dirs[emulator], selectedGame.filename)}"`;
 
 	switch(emulator) {
-		case 'MAME':
-			gameAbsPath = Path.join(dirs.mame, selectedGame.filename);
-			processName = 'PAUSE';
+		case 'mame':
+			processName = 'PAUSE';	//preferences.get('procDirs').mame;
+			processArgs.push(gameAbsPath);
+			break;
+		case 'nes':
+			processArgs.push(gameAbsPath);
 			break;
 		default:
 			console.error(`Cannot play games with emulator: ${emulator}`);
@@ -155,12 +202,12 @@ ipcMain.on('startGame', (e, selectedGame) => {
 			return;
 	}
 
-	gameAbsPath = `"${gameAbsPath}"`;
 	gameStartTime = new Date().getTime();
-	console.log(`Process: ${processName}\nPath: ${gameAbsPath}`);
-	childProcess = spawn(processName, [gameAbsPath], {
+	console.log(`Process: ${processName}\nGamePath: ${gameAbsPath}`);
+	childProcess = spawn(processName, processArgs, {
 		shell: true
 	});
+
 	childProcess.on('close', () => {
 		if(!wasForceClosed) {
 			onChildExit(e, selectedGame);
@@ -171,9 +218,5 @@ ipcMain.on('startGame', (e, selectedGame) => {
 });
 
 ipcMain.on('forceClose', (e, selectedGame) => {
-	if(childProcess) {
-		childProcess.kill();
-		onChildExit(e);
-	}
-	wasForceClosed = true;
+	killEmulatorByGame(selectedGame);
 });

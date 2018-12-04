@@ -30,12 +30,30 @@
 					<v-switch :label="key"
 						:v-model="val"></v-switch>
 				</span> -->
-				<!-- Rom Dirs -->
-				<template v-if="key === 'dirs'">
+				<!-- Process Dirs -->
+				<template v-if="key == 'procDirs'">
 					<span
 						:key="emulator"
 						v-for="(path, emulator) in val">
-						{{emulator.toUpperCase()}}: 
+						{{emulator.toUpperCase()}} Emulator: 
+						<v-toolbar class="primary">
+							<v-toolbar-title>
+								{{path}}
+							</v-toolbar-title>
+							<v-spacer></v-spacer>
+							<v-btn icon
+								@click="selectProcDir(emulator)">
+								<v-icon>search</v-icon>
+							</v-btn>
+						</v-toolbar>
+					</span>
+				</template>
+				<!-- Rom Dirs -->
+				<template v-else-if="key == 'dirs'">
+					<span
+						:key="emulator"
+						v-for="(path, emulator) in val">
+						{{emulator.toUpperCase()}} ROMs: 
 						<v-toolbar class="primary">
 							<v-toolbar-title>
 								{{path}}
@@ -47,9 +65,6 @@
 							</v-btn>
 						</v-toolbar>
 					</span>
-				</template>
-				<template v-else>
-					{{key}}: {{val}}
 				</template>
 			</v-card-text>
 
@@ -66,6 +81,13 @@
 	export default {
 		name: 'preferences',
 		methods: {
+			selectProcDir(emulator) {
+				this.$electron.remote.dialog.showOpenDialog({properties: ['openFile']}, (file) => {
+					if(file) {
+						this.preferences.procDirs[emulator] = file[0];
+					}
+				});
+			},
 			selectEmulatorDir(emulator) {
 				this.$electron.remote.dialog.showOpenDialog({properties: ['openDirectory']}, (dirs) => {
 					if(dirs) {

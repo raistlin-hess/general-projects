@@ -14,15 +14,15 @@
 					<v-layout row height="20vh">
 						<v-card-text lg4>
 							<span class="headline">Manufacturer:<br></span>
-							{{selectedGame.manufacturer}}
+							{{selectedGame && selectedGame.manufacturer}}
 						</v-card-text>
 						<v-card-text lg4>
 							<span class="headline">System:<br></span>
-							{{selectedGame.system}}
+							{{selectedGame && selectedGame.system}}
 						</v-card-text>
 						<v-card-text lg4>
 							<span class="headline">Year:<br></span>
-							{{selectedGame.year}}
+							{{selectedGame && selectedGame.year}}
 						</v-card-text>
 					</v-layout>
 					<v-layout row height="20vh">
@@ -32,7 +32,7 @@
 								@click="onGameRatingClick(true)">
 								<v-icon>thumb_up</v-icon>
 							</v-btn>
-							{{selectedGame.overallRating+'%'}}
+							{{selectedGame && selectedGame.overallRating+'%'}}
 							<v-btn flat icon color="error"
 								@click="onGameRatingClick(false)">
 								<v-icon>thumb_down</v-icon>
@@ -40,11 +40,11 @@
 						</v-card-text>
 						<v-card-text lg4>
 							<span class="headline">Play Time:<br></span>
-							{{ formatPlaytime(selectedGame.playTime) }}
+							{{ selectedGame ? formatPlaytime(selectedGame.playTime) : '' }}
 						</v-card-text>
 						<v-card-text lg4>
 							<span class="headline">Notes:<br></span>
-							{{selectedGame.notes}}
+							{{selectedGame && selectedGame.notes}}
 						</v-card-text>
 					</v-layout>
 					<v-layout row height="5vh">
@@ -61,7 +61,7 @@
 			v-model="playingGame">
 			<v-card>
 				<v-card-title class="headline">
-					Now Playing:&nbsp;&nbsp;<em>{{selectedGame.name}}</em>
+					Now Playing:&nbsp;&nbsp;<em>{{selectedGame && selectedGame.name}}</em>
 				</v-card-title>
 				<v-card-text>
 					If you would like to force the the game to stop, please click the button below.
@@ -132,7 +132,7 @@
 				this.$electron.ipcRenderer.send('startGame', this.selectedGame);
 			},
 			onForceClose() {
-				this.$electron.ipcRenderer.send('forceClose');
+				this.$electron.ipcRenderer.send('forceClose', this.selectedGame);
 			},
 			onEndGame(emitter, totalPlaytime) {
 				this.playingGame = false;
