@@ -4,7 +4,7 @@
 	"version": "0.0.0",
 	"author": "rh",
 	"description": "An electron-vue project",
-	"license": null,
+	"license": "free",
 	"main": "./dist/electron/main.js",
 	"scripts": {
 		"build": "node .electron-vue/build.js",
@@ -22,10 +22,10 @@
 		"postinstall": ""
 	},
 	"dependencies": {
-		"vue": "^2.4.2",
-		"vue-electron": "^1.0.6",
-		"vue-router": "^2.5.3",
-		"vuetify": "^1.3.3",
+		"vue": "^2",
+		"vue-electron": "^1",
+		"vue-router": "^3",
+		"vuetify": "^1",
 		"nedb": "^1.8.0"
 	},
 	"devDependencies": {
@@ -53,6 +53,8 @@
 		"html-webpack-plugin": "^2.30.1",
 		"multispinner": "^0.2.1",
 		"node-loader": "^0.6.0",
+		"node-sass": "^4.12.0",
+		"sass-loader": "^7.1.0",
 		"style-loader": "^0.18.2",
 		"stylus": "^0.54.5",
 		"stylus-loader": "^3.0.1",

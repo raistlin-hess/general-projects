@@ -1,14 +1,15 @@
 <template>
 	<v-layout>
 		<v-navigation-drawer permanent app clipped left
-			style="width: 50vw;">
+			style="width: 60vw;">
 			<grid @gameSelected="onGameSelected"></grid>
 		</v-navigation-drawer>
 		
 		<v-navigation-drawer permanent app clipped right
-			style="width: 50vw; height: 100vh;">
+			style="width: 40vw; height: 100vh;">
 				<v-card max-height="60vh">
-						<v-img src="https://picsum.photos/510/300?random" height="60vh"></v-img>
+						<!-- <v-img src="https://picsum.photos/510/300?random" height="60vh"></v-img> -->
+						<animated-wave></animated-wave>
 				</v-card>
 				<v-card max-height="40vh">
 					<v-layout row height="20vh">
@@ -99,21 +100,45 @@
 	import Path from 'path';
 	import Tree from './Tree';
 	import Grid from './Grid';
+	import AnimatedWave from './AnimatedWave';
 
 	export default {
 		name: 'home',
 		components: {
 			Tree,
-			Grid
+			Grid,
+			AnimatedWave
 		},
 		mounted() {
-			this.$electron.ipcRenderer.send('getPreferences');
+			let me = this;
+			me.$electron.ipcRenderer.send('getPreferences');
 
 			//Setup listeners
-			this.$electron.ipcRenderer.on('getPreferences', this.onGetPreferences);
-			this.$electron.ipcRenderer.on('setPreferencesComplete', this.onSetPreferencesComplete);
-			this.$electron.ipcRenderer.on('endGame', this.onEndGame);
-			this.$electron.ipcRenderer.on('playGameError', this.playGameError);
+			me.$electron.ipcRenderer.on('getPreferences', me.onGetPreferences);
+			me.$electron.ipcRenderer.on('setPreferencesComplete', me.onSetPreferencesComplete);
+			me.$electron.ipcRenderer.on('endGame', me.onEndGame);
+			me.$electron.ipcRenderer.on('playGameError', me.playGameError);
+
+			window.addEventListener("keydown", function(e) {
+				//Enter - Play game
+				if(e.keyCode == 13) {
+					if(me.playingGame) {
+						me.onForceClose();
+						} else {
+						me.onPlayClick();
+					}
+				}
+				//TODO: Change to more sensible binding
+				//Backspace - Positive Rating
+				else if(e.keyCode == 8) {
+					me.onGameRatingClick(true);
+				}
+				//TODO: Change to more sensible binding
+				//Backspace - Negative Rating
+				else if(e.keyCode == 9) {
+					me.onGameRatingClick(false);
+				}
+			});
 		},
 		methods: {
 			onGetPreferences(e, preferences) {

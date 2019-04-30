@@ -11,7 +11,7 @@
 }
 
 ::-webkit-scrollbar-thumb {
-	background-color: var(--v-accent-base);
+	background-color: var(--v-primary-base);
 	border-radius: 10px;
 	-webkit-transition: all 1s ease-in-out;
 	transition: all 1s ease-in-out;

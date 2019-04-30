@@ -36,7 +36,7 @@
 			me.$electron.ipcRenderer.on('getPreferences', me.onGetPreferences);
 
 			window.addEventListener("keydown", function(e) {
-				//Move selection up/down
+				//ArrowUp/ArrowDown - Move selection up/down
 				if([38,40].indexOf(e.keyCode) > -1) {
 					e.preventDefault();
 

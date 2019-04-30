@@ -122,12 +122,14 @@ function onChildExit(e, selectedGame) {
 	let duration = new Date().getTime() - gameStartTime;
 	duration = parseFloat((duration/1000).toFixed(0));
 
-	e.sender.send('endGame', duration);
+	if(e) {
+		e.sender.send('endGame', duration);
+	}
 	childProcess = null;
 	gameStartTime = null;
 }
 
-function killEmulatorByGame(selectedGame) {
+function killEmulatorByGame(e, selectedGame) {
 	exec('tasklist /fo csv', (err, stdout, stderr) => {
 		let list = stdout.split(/\r\n/),
 			emulator = selectedGame.system.toLowerCase(),
@@ -145,7 +147,7 @@ function killEmulatorByGame(selectedGame) {
 				process.kill(listProcessPid);
 			}
 		}
-		onChildExit(e);
+		onChildExit(e, selectedGame);
 		wasForceClosed = true;
 	});
 }
@@ -156,14 +158,14 @@ function killAllEmulators() {
 		let fakeGame = {
 			system: emulator
 		};
-		killEmulatorByGame(fakeGame);
+		killEmulatorByGame(null, fakeGame);
 	}
 }
 
 /**
  * Main <-> Renderer Listeners
  */
-ipcMain.on('onExit', () => {
+ipcMain.on('onExit', (e, data) => {
 	savePreferences();
 });
 
@@ -218,5 +220,5 @@ ipcMain.on('startGame', (e, selectedGame) => {
 });
 
 ipcMain.on('forceClose', (e, selectedGame) => {
-	killEmulatorByGame(selectedGame);
+	killEmulatorByGame(e, selectedGame);
 });

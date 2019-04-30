@@ -1,5 +1,5 @@
 <template>
-	<v-dialog persistent
+	<v-dialog persistent max-width="75vw" max-height="75vh"
 		v-model="showPreferences">
 		<v-card>
 			<v-card-title class="headline">
@@ -9,7 +9,8 @@
 			</v-card-title>
 			
 			<v-card-text :key="key"
-				v-for="(val, key) in preferences">
+				v-for="(val, key) in preferences"
+				v-if="key == 'procDirs' || key == 'dirs'">
 				<!-- Directory Type -->
 				<!-- <template v-if="key === 'rootDir'"> -->
 					<!-- {{key}}:
