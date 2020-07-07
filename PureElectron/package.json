@@ -16,7 +16,7 @@
 	},
 	"main": "electron.js",
 	"dependencies": {
-		"electron": "^3.*",
+		"electron": "^9.*",
 		"electron-settings": "^3.*",
 		"update-electron-app": "^1.*",
 		"glob": "^7.*"
